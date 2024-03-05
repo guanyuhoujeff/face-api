@@ -211,7 +211,7 @@ class InceptionResnetV1(nn.Module):
         self.pretrained = pretrained
         self.classify = classify
         self.num_classes = num_classes
-        self.class_to_idx = None
+        self.class_to_idx: dict = {}
 
         if pretrained == 'vggface2':
             tmp_classes = 8631

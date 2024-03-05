@@ -1,5 +1,6 @@
-from .embedder import Encoder
+from .embedder import TorchEncoder, OpenvinoEncoder
 
 __all__ = [
-    'Encoder',
+    'TorchEncoder',
+    'OpenvinoEncoder',
 ]

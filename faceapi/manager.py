@@ -8,10 +8,11 @@ else:
     from typing_extensions import Literal
 from typing import List 
 from .base import FaceDetection, ModelHandler
-from .faceDetector import Detector
-from .faceEmbeddimg import Encoder
+from .faceDetector import OpenvinoDetector, TorchDetector
+from .faceEmbeddimg import OpenvinoEncoder, TorchEncoder
 import os
 import cv2
+import torch
 
 # face detector
 DETECTOR_MODEL_LIST = [
@@ -33,23 +34,41 @@ DETECTOR_MODEL_LIST = [
 class FaceAPIManager(ModelHandler):
     def __init__(self, 
                  detector_model_path = 'face-yolov8-m.pt',
-                 encoder_model_path  = None) -> None:
+                 encoder_model_path  = None,
+                 device=None
+                 ) -> None:
         super().__init__()
         
         self._detector_model_path = detector_model_path
         self._encoder_model_path = encoder_model_path
+        self._device  = device
+        # torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
         
         self.initialize()
 
     def initialize(self):
         if not self.initialized:
             if os.path.isfile(self._detector_model_path):
-                self._detector = Detector(self._detector_model_path)
+                if '.xml' in self._detector_model_path:
+                    ## 走 openvino
+                    if self._device is None:
+                        ## 如果沒給 device 就預設cpu
+                        self._device = "CPU"
+                    self._detector = OpenvinoDetector(self._detector_model_path, self._device)
+                else:
+                    self._detector = TorchDetector(self._detector_model_path, self._device)
             else:
                 raise ValueError('Detector model {self._detector_model_path}, not found!')
             
-            # 假如 self._encoder_model_path 是None，則會讀取預設的官方權重
-            self._encoder = Encoder(self._encoder_model_path)
+            
+            if '.xml' in self._encoder_model_path:
+                ## 走 openvino
+                if self._device is None:
+                    self._device = "CPU"
+                self._encoder = OpenvinoEncoder(self._encoder_model_path, self._device)
+            else:
+                # 假如 self._encoder_model_path 是None，則會讀取預設的官方權重
+                self._encoder = TorchEncoder(self._encoder_model_path, self._device)
 
             self.initialized = True
 

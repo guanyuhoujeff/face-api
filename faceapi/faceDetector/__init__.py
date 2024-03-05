@@ -1,5 +1,6 @@
-from .detector import Detector
+from .detector import TorchDetector, OpenvinoDetector
 
 __all__ = [
-    'Detector',
+    'TorchDetector',
+    'OpenvinoDetector',
 ]
