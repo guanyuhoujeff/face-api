@@ -3,18 +3,20 @@ import torch
 import numpy as np
 from torchvision import transforms
 from typing import  List
-# from .inception_resnet import InceptionResnetV1
-from .facenet.models.resnet import Resnet34Triplet
-
+from .facenet.models.inception_resnet_v1 import InceptionResnetV1
+from .facenet.models.mtcnn import fixed_image_standardization
+import cv2
 
 class Encoder(ModelHandler):
-    """_summary_
-    
-    the face embedding model of this project is using facenet-pytorch-glint360k
-    https://github.com/tamerthamoqa/facenet-pytorch-glint360k/tree/master?tab=readme-ov-file
-    
-    """
-    def __init__(self, model_path ) -> None:
+    def __init__(self, model_path=None) -> None:
+        """_summary_
+        
+        此模型的embedding 部分，主要參考
+        https://github.com/timesler/facenet-pytorch
+
+        Args:
+            model_path (_type_, optional): 如果有提供 finetune 完的模型路徑，則會以讀取該模型(輸出會是該模型的分類)。如果沒有，就會走預設的(輸出會是512個embedding). Defaults to None.
+        """
         super().__init__()
         
         self._model_path = model_path
@@ -22,13 +24,10 @@ class Encoder(ModelHandler):
         
     def _buildTransform(self):
         self.transform = transforms.Compose([
-                transforms.ToPILImage(),
-                transforms.Resize((140, 140)),  # Pre-trained model uses 140x140 input images
-                transforms.ToTensor(),
-                transforms.Normalize(
-                    mean=[0.6071, 0.4609, 0.3944],  # Normalization settings for the model, the calculated mean and std values
-                    std=[0.2457, 0.2175, 0.2129]     # for the RGB channels of the tightly-cropped glint360k face dataset
-            )
+            lambda img : cv2.resize(img, (160,160)),  ## 因為目前 embedding 訓練的模型是 160*160
+            np.float32,
+            transforms.ToTensor(),
+            fixed_image_standardization
         ])
         
         
@@ -36,22 +35,25 @@ class Encoder(ModelHandler):
         self._devie = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
         if not self.initialized:
-            
-            checkpoint = torch.load(self._model_path, map_location=self._devie)
-            self._model = Resnet34Triplet(embedding_dimension=checkpoint['embedding_dimension'])
-            self._model.load_state_dict(checkpoint['model_state_dict'])
+            # 模型走官方預設pretrain 的權重
+            self._model = InceptionResnetV1(
+                classify=False,
+                pretrained='vggface2'
+            )
+            if not self._model_path is None:
+                # 如果有finetune過的，即可模型走官方預設pretrain 的權重
+                self._model.loadFinetuneModel(self._model_path)
+                
             self._model.to(self._devie)
             self._model.eval()
-            
             self._buildTransform()
-            
             self.initialized = True
 
     def preprocess(self, face_img_list: List[np.ndarray]) -> torch.Tensor:
         """
         如何前處理資料
         """
-        return torch.stack([ self.transform(im) for im in face_img_list]).to(self._devie)
+        return torch.stack([self.transform(im) for im in face_img_list]).to(self._devie)
     
     def inference(self, model_input: torch.Tensor) ->  torch.Tensor:
         """_summary_

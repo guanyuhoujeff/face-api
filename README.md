@@ -29,4 +29,13 @@ https://susanqq.github.io/UTKFace/
 
 
 embedding 參考
-https://github.com/tamerthamoqa/facenet-pytorch-glint360k/tree/master?tab=readme-ov-file
+https://github.com/timesler/facenet-pytorch/tree/master
+
+
+age-gender
+https://github.com/tae898/age-gender
+
+
+
+HSEmotion (High-Speed face Emotion recognition) library
+https://github.com/av-savchenko/face-emotion-recognition

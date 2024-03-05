@@ -11,6 +11,7 @@ from .base import FaceDetection, ModelHandler
 from .faceDetector import Detector
 from .faceEmbeddimg import Encoder
 import os
+import cv2
 
 # face detector
 DETECTOR_MODEL_LIST = [
@@ -21,14 +22,6 @@ DETECTOR_MODEL_LIST = [
     'face-yolov8-m',
     'face-yolov8-l',
 ]
-
-# face encoder
-ENCODER_MODEL_LIST = [
-    # torch
-    'torch-vgg-face', ## 中量
-    'inception-resnet-v1', ## 'vggface2' 輕量
-]
-
 # Union[Literal[
 #                     'torch-retinaface', 
 #                     'face-yolov8-n',
@@ -40,7 +33,7 @@ ENCODER_MODEL_LIST = [
 class FaceAPIManager(ModelHandler):
     def __init__(self, 
                  detector_model_path = 'face-yolov8-m.pt',
-                 encoder_model_path  = 'inception-resnet-v1.pt') -> None:
+                 encoder_model_path  = None) -> None:
         super().__init__()
         
         self._detector_model_path = detector_model_path
@@ -55,10 +48,8 @@ class FaceAPIManager(ModelHandler):
             else:
                 raise ValueError('Detector model {self._detector_model_path}, not found!')
             
-            if os.path.isfile(self._encoder_model_path):
-                self._encoder = Encoder(self._encoder_model_path)
-            else:
-                raise ValueError('Encoder model {self._encoder_model_path}, not found!')
+            # 假如 self._encoder_model_path 是None，則會讀取預設的官方權重
+            self._encoder = Encoder(self._encoder_model_path)
 
             self.initialized = True
 
@@ -69,6 +60,8 @@ class FaceAPIManager(ModelHandler):
         
         faces = self._detector.handle(img, conf=conf, iou=iou)
         if not self._encoder is None and len(faces)>0:
+            # 如果用 cv2讀取影像，預設是BGR，要放入 resnet 的trans fun，則把資料轉成 RGB
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
             face_img_list = []
             for face in faces:
                 x1,y1,x2,y2  = face.xyxy
