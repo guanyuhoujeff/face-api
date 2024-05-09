@@ -3,3 +3,5 @@ Cython
 cmake
 numpy
 
+timm
+h5py
