@@ -21,20 +21,23 @@ pip install -r requirements.txt
 pip install ultralytics --user
 
 
-
-
 人臉dataset
-
 https://susanqq.github.io/UTKFace/
 
 
 embedding 參考
 https://github.com/timesler/facenet-pytorch/tree/master
 
-
-age-gender
+<!-- 年紀性別 age-gender，目前用這個 -->
 https://github.com/tae898/age-gender
 
+# 目前使用
+https://github.com/nikunjlad/Gender-and-Age-Prediction-from-Face-Images/tree/master?tab=readme-ov-file
+
+
+<!-- 情緒 -->
+# 目前使用
+https://github.com/nikunjlad/Gender-and-Age-Prediction-from-Face-Images.git
 
 
 HSEmotion (High-Speed face Emotion recognition) library

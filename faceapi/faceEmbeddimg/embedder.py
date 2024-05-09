@@ -37,7 +37,7 @@ class TorchEncoder(ModelHandler):
         ])
         
         
-    def initialize (self,):
+    def initialize(self,):
         if not self.initialized:
             # 模型走官方預設pretrain 的權重
             self._model = InceptionResnetV1(

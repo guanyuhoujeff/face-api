@@ -18,7 +18,7 @@ class TorchDetector(ModelHandler):
         super().__init__()
 
         self._model_path = model_path
-        self._devie = device
+        self._device = device
         
         self.initialize()
 
@@ -47,6 +47,7 @@ class TorchDetector(ModelHandler):
         """
         如何將ai預測完的資料做後續處理
         """
+        print('!!! ', inference_output)
         return [
             FaceDetection( 
                 xyxy = [int(d) for d in output[:4]], 
@@ -72,7 +73,7 @@ class OpenvinoDetector(ModelHandler):
         # Create OpenVINO Core object instance
         self._core = ov.Core()
         self._model_path = model_path
-        self._devie = device
+        self._device = device
         
         self.initialize()
 
@@ -80,13 +81,13 @@ class OpenvinoDetector(ModelHandler):
         if not self.initialized:
                         
             det_ov_model = self._core.read_model(self._model_path)
-            if self._devie != "CPU":
+            if self._device != "CPU":
                 det_ov_model.reshape({0: [1, 3, 640, 640]})
             
             ov_config = {}
-            if "GPU" in self._devie or ("AUTO" in self._devie and "GPU" in self._core.available_devices):
+            if "GPU" in self._device or ("AUTO" in self._device and "GPU" in self._core.available_devices):
                 ov_config = {"GPU_DISABLE_WINOGRAD_CONVOLUTION": "YES"}
-            self._model = self._core.compile_model(det_ov_model, self._devie, ov_config)
+            self._model = self._core.compile_model(det_ov_model, self._device, ov_config)
   
             self.initialized = True
 

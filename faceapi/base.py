@@ -1,13 +1,15 @@
-from dataclasses import dataclass, field
-from typing import List
+from pydantic import BaseModel
+from typing import List, Optional
 from abc import ABC, abstractmethod
 
-@dataclass
-class FaceDetection:
-    xyxy: List[int] = field(default_factory=list)
+class FaceDetection(BaseModel):
+    xyxy: List[int] = []
     score: float = 0.0
-    landms: List[float] = field(default_factory=list)
-    embedding : List[float] = field(default_factory=list)
+    landms: List[float] = []
+    embedding: List[float] = []
+    emotion: Optional[str] = None
+    age: Optional[str] = None
+    gender: Optional[str] = None
 
 
 class ModelHandler(ABC):
