@@ -11,6 +11,24 @@ from .openvino_utils import (
 )
 
 
+def adjust_to_multiple_of_32(size):
+    """
+    Adjust the input size to the nearest multiple of 32.
+
+    Parameters:
+    size (tuple): A tuple containing the width and height of the image.
+
+    Returns:
+    tuple: A tuple containing the adjusted width and height.
+    """
+    def round_to_nearest_32(x):
+        return 32 * round(x / 32)
+    
+    width, height = size
+    adjusted_width = round_to_nearest_32(width)
+    adjusted_height = round_to_nearest_32(height)
+    
+    return (adjusted_width, adjusted_height)
 
 
 class TorchDetector(ModelHandler):
@@ -40,14 +58,14 @@ class TorchDetector(ModelHandler):
             np.ndarray: _description_
         """
         img_h, img_w = model_input.shape[:2]
-        res = self._model.predict(model_input , imgsz=(img_h, img_w), conf=conf , iou=iou, verbose=False)
+        res = self._model.predict(model_input , imgsz= adjust_to_multiple_of_32((img_h, img_w)), conf=conf , iou=iou, verbose=False)
         return res[0].boxes.data.cpu().numpy()
 
     def postprocess(self, inference_output) -> List[FaceDetection]:
         """
         如何將ai預測完的資料做後續處理
         """
-        print('!!! ', inference_output)
+        # print('!!! ', inference_output)
         return [
             FaceDetection( 
                 xyxy = [int(d) for d in output[:4]], 
@@ -116,7 +134,7 @@ class OpenvinoDetector(ModelHandler):
             input_hw=input_hw, 
             orig_img=model_input, nc=1
         )
-        print(res)
+        # print(res)
         det = res[0]['det']
         if len(det) >0:
             return det.numpy()

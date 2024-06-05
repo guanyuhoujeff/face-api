@@ -32,8 +32,10 @@ DETECTOR_MODEL_LIST = [
 class FaceAPIManager(ModelHandler):
     def __init__(self, 
                  detector_model_path = 'face-yolov8-m.pt',
+                 
                  encoder_model_path  = None,
                  emotion_model_path  = None,
+                 
                  age_proto_path = 'age_deploy.prototxt', 
                  age_model_path = 'age_net.caffemodel', 
                  
