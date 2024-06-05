@@ -6,6 +6,82 @@ from .networks.DDAM import DDAMNet
 from torchvision import transforms
 import cv2
 
+class RafEmotionTorchDetector(ModelHandler):
+    def __init__(self, 
+                 torch_model_path : str,
+                 device=torch.device("cuda:0" if torch.cuda.is_available() else "cpu")) -> None:
+        super().__init__()
+
+        self._torch_model_path = torch_model_path
+        self._device = device
+        
+        self._transforms_inference = transforms.Compose([
+            transforms.ToPILImage(),
+            transforms.Resize((224, 224)),
+            transforms.ToTensor(),
+            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        ])
+            
+        self.initialize()
+
+
+    def initialize (self,):
+        if not self.initialized:
+            
+            self._model = torch.load(self._torch_model_path)
+            self._model.to(self._device)
+            self._model.eval()
+            
+            self.initialized = True
+
+
+    def preprocess(self, face_img_list: List[np.ndarray]) -> torch.Tensor:
+        """
+        如何前處理資料
+        """
+        return [self._transforms_inference(face_img)[None].to(self._device) for face_img in face_img_list]
+    
+    def inference(self, model_input: List[torch.Tensor]) -> np.ndarray:
+        """_summary_
+
+        Args:
+            model_input (np.ndarray): _description_
+            conf (float, optional): _description_. Defaults to 0.5.
+            iou (float, optional): _description_. Defaults to 0.7.
+
+        Returns:
+            np.ndarray: _description_
+        """
+        res_list = []
+        for data_to_model in model_input:
+            # predict Age
+            outputs = self._model(data_to_model)
+            _, preds = torch.max(outputs, 1)
+            pred = preds.cpu().numpy()[0]
+            label =["Surprise",
+            "Fear",
+            "Disgust",
+            "Happiness",
+            "Sadness",
+            "Anger",
+            "Neutral"][pred]
+            res_list.append(label)
+      
+        # print('predicts', )
+        # print(predicts)
+        return np.array(res_list)
+
+    def handle(self, img: np.ndarray) -> np.ndarray:
+        """
+        整個ai辨識流程，從原始資料->前處理->ai預測->後續處理
+        """
+        model_input = self.preprocess(img)
+        model_output = self.inference(model_input)
+        return self.postprocess(model_output)
+
+
+
+
 class TorchDetector(ModelHandler):
     def __init__(self, model_path = 'face-emotion.pth', device=torch.device("cuda:0" if torch.cuda.is_available() else "cpu")) -> None:
         super().__init__()

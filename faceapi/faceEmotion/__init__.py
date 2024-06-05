@@ -1,6 +1,5 @@
-from .detector import TorchDetector
+from .detector import RafEmotionTorchDetector
 
 __all__ = [
-    'TorchDetector',
-    # 'OpenvinoDetector',
+    'RafEmotionTorchDetector',
 ]
