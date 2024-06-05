@@ -82,11 +82,8 @@ class TorchDetector(ModelHandler):
         model_output = self.inference(model_input, conf, iou)
         return self.postprocess(model_output)
 
-
-
-
 class OpenvinoDetector(ModelHandler):
-    def __init__(self, model_path = 'face-yolov8-m', device=None) -> None:
+    def __init__(self, model_path = 'face-yolov8-m.xml', device=None) -> None:
         super().__init__()
         # Create OpenVINO Core object instance
         self._core = ov.Core()
