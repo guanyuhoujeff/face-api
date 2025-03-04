@@ -12,8 +12,11 @@ conda install -c conda-forge ffmpeg -y
 conda install -c conda-forge openh264 -y -->
 
 python -m pip install --upgrade pip
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121  
 
+<!-- cuda -->
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121  
+<!-- intel gpu -->
+pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
 
 pip install -r requirements.txt
 

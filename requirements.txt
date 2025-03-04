@@ -1,8 +1,12 @@
 opencv-python
+matplotlib
 Cython
 cmake
 numpy
 
+transformers
+
 timm
 h5py
 pydantic
+ultralytics
